@@ -18,17 +18,23 @@ def iniciarCarga():
 @app.route('/publicacion', methods=['POST'])
 def publicacion():
     datos = Convert(request.json)
-    print(datos["hashtags"])
-    ingresar_hashtags(datos["hashtags"])
-    ingresar_publicacion(datos)
-    return jsonify ({"mensaje":"Publicar en base"})
+    salida_hashtags = ingresar_hashtags(datos["hashtags"])
+    salida_publicacion = ingresar_publicacion(datos)
+    if salida_hashtags != None and salida_publicacion !=None:
+        publicacion_hashtag(salida_publicacion, salida_hashtags)
+        return jsonify ({"mensaje":"Publicar en base"})
+    else:
+        return jsonify({"mensaje": "Ocurrio un error"})
 
-@app.route('/finalizarCarga')
+@app.route('/finalizarCarga', methods=['POST'])
 def finalizarCarga():
-    return jsonify({"mensaje": "Carga Terminada"})
+    cantidad_ingresada = request.json['cantidad']
+    #Esto debe de mandar la notificacion a pub sub google
+    return jsonify({"mensaje": "Carga Terminada","cantidad": cantidad_ingresada})
 
 def ingresar_publicacion(publicacion):
     cursor = mysql.get_db().cursor()
+    id_publicacion = -1
     try:
         slq = """INSERT INTO publicacion(nombre,comentario,fecha, upvotes,downvotes)
         VALUES('{0}','{1}', str_to_date('{2}','%d/%m/%Y'), {3}, {4})""".format(publicacion["nombre"], publicacion["comentario"], publicacion["fecha"],
@@ -39,11 +45,11 @@ def ingresar_publicacion(publicacion):
         sql = "SELECT LAST_INSERT_ID() from publicacion"
         cursor.execute(sql)
         datos = cursor.fetchone()
-        print(datos[0])
+        cursor.close()
         return datos[0]
     except Exception as e:
-        return jsonify({"mensaje": "Error insertar publicacion"})
-    cursor.close()
+        print(e)
+        return None
         
 
 def ingresar_hashtags(hastags):
@@ -51,7 +57,6 @@ def ingresar_hashtags(hastags):
     cursor = mysql.get_db().cursor()
     try:
         for hashtag in hastags:
-            
             sql = "SELECT id_hashtag from hashtag where descripcion = '{0}'".format(hashtag)
             cursor.execute(sql)
             datos = cursor.fetchone()
@@ -69,15 +74,25 @@ def ingresar_hashtags(hastags):
                 datos = cursor.fetchone()
                 hashtags_id.append(datos[0])
     except Exception as e:
-        return jsonify({"mensaje": "error"})
+        print(e)
+        return None
     #return los id de los hashtags
     cursor.close()
-    print(hashtags_id)
     return hashtags_id
 
 
-def publicacion_hashtag(id_publicacion, hashtag_id):
-    print('ingresar en la tabla publicacion hashtag')
+def publicacion_hashtag(id_publicacion, hashtags_id):
+    cursor = mysql.get_db().cursor()
+    try:
+        for id_hashtag in hashtags_id:
+            sql = "INSERT INTO publicacion_hashtag(id_publicacion,id_hashtag) VALUES({0},{1})".format(id_publicacion,id_hashtag)
+            print(sql)
+            cursor.execute(sql)
+            mysql.get_db().commit()
+    except Exception as e:
+        print(e)
+        return None
+    cursor.close()
 
 if __name__ == '__main__':
     app.config.from_object(config["development"])
