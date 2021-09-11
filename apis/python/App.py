@@ -2,10 +2,12 @@ from flask import Flask,jsonify,request
 from config import config
 from helpers import Convert
 from flaskext.mysql import MySQL
+from flask_cors import CORS
 
 app = Flask(__name__)
 mysql = MySQL()
 mysql.init_app(app)
+CORS(app)
 
 @app.route('/')
 def index():
