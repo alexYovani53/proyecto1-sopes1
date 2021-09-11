@@ -9,6 +9,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 type Post struct {
@@ -190,5 +191,12 @@ func main() {
 	router.HandleFunc("/", indexRoute).Methods("GET")
 	router.HandleFunc("/publicacion", publicacion).Methods("POST")
 	router.HandleFunc("/finalizarCarga", finalizarCarga).Methods("POST")
-	http.ListenAndServe(":3001", router)
+
+	c := cors.New(cors.Options{
+		AllowedOrigins:   []string{"*"},
+		AllowCredentials: true,
+	})
+	handler := c.Handler(router)
+
+	http.ListenAndServe(":3001", handler)
 }
