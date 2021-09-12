@@ -176,4 +176,4 @@ def publicacion_hashtag_base2(id_publicacion, hashtags_id):
     cursor.close()
 
 if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=3001)
+    app.run(host='0.0.0.0', debug=True, port=3001)
