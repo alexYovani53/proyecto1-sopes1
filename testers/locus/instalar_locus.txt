@@ -1,0 +1,9 @@
+
+
+para instalar locus ejecutamos
+
+    pip install locust
+
+Ejecución de locus
+
+    locust --locustfile = nomeArchivo.py
