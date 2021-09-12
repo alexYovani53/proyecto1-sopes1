@@ -1,5 +1,4 @@
 from flask import Flask,jsonify,request
-from config import config
 from helpers import Convert
 from flaskext.mysql import MySQL
 from flask_cors import CORS
@@ -177,4 +176,4 @@ def publicacion_hashtag_base2(id_publicacion, hashtags_id):
     cursor.close()
 
 if __name__ == '__main__':
-    app.run(port=3001, debug=True)
+    app.run(host="0.0.0.0", port=3001)
