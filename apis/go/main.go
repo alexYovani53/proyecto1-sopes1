@@ -13,7 +13,8 @@ import (
 )
 
 type Post struct {
-	Cantidad int `json:cantidad`
+	Guardados     int `json:guardados`
+	TiempoDeCarga int `json:tiempoDeCarga`
 }
 
 type Publicacion struct {
@@ -23,6 +24,13 @@ type Publicacion struct {
 	Hashtags   []string `json:hashtags`
 	Upvotes    int      `json:upvotes`
 	Downvotes  int      `json:downvotes`
+}
+
+type Fin struct {
+	Guardados     int    `json:guardados`
+	Api           string `json:api`
+	TiempoDeCarga int    `json:tiempoDeCarga`
+	Bd            string `json:bd`
 }
 
 type PublicacionId struct {
@@ -49,9 +57,15 @@ func finalizarCarga(w http.ResponseWriter, r *http.Request) {
 	}
 	json.Unmarshal(reqBody, &newCantidad)
 
+	var newCarga Fin
+	newCarga.Api = "go"
+	newCarga.Guardados = newCantidad.Guardados
+	newCarga.TiempoDeCarga = newCantidad.TiempoDeCarga
+	newCarga.Bd = "CosmosBD y CloudSQL"
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
-	json.NewEncoder(w).Encode(newCantidad)
+	json.NewEncoder(w).Encode(newCarga)
 }
 
 func publicacion(w http.ResponseWriter, r *http.Request) {
