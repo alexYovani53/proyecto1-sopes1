@@ -316,5 +316,5 @@ func main() {
 	})
 	handler := c.Handler(router)
 
-	http.ListenAndServe(":3001", handler)
+	http.ListenAndServe(":3002", handler)
 }
