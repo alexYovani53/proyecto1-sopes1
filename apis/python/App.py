@@ -27,9 +27,14 @@ def iniciarCarga():
 
 @app.route('/finalizarCarga', methods=['POST'])
 def finalizarCarga():
-    cantidad_ingresada = request.json['cantidad']
+    datos_salida = {
+        "Guardados": request.json['guardados'],
+        "TiempoDeCarga": request.json['tiempoDeCarga'],
+        "Api": "python",
+        "Bd": "cosmosDB y CloudSQL"
+    }
     #Esto debe de mandar la notificacion a pub sub google
-    return jsonify({"mensaje": "Carga Terminada","cantidad": cantidad_ingresada})
+    return jsonify(datos_salida)
 
 
 @app.route('/publicacion', methods=['POST'])
