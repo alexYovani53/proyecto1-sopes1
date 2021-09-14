@@ -1,5 +1,4 @@
 from flask import Flask,jsonify,request
-from helpers import Convert
 from flaskext.mysql import MySQL
 from flask_cors import CORS
 
@@ -179,6 +178,18 @@ def publicacion_hashtag_base2(id_publicacion, hashtags_id):
         print(e)
         return None
     cursor.close()
+
+
+def Convert(entrada):
+    new_publicacion = {
+        "nombre": entrada["nombre"],
+        "comentario": entrada["comentario"],
+        "fecha": entrada["fecha"],
+        "hashtags": entrada["hashtags"],
+        "upvotes": entrada["upvotes"],
+        "downvotes": entrada["downvotes"]
+    }
+    return new_publicacion
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, port=3001)
