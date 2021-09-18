@@ -1,6 +1,7 @@
 import { createServer } from 'http';
 import { app } from './app';
 import { sequelize } from './sequelize';
+import { sequelizeGC } from './sequelize';
 import * as debug from 'debug';
 
 var port = normalizePort(process.env.PORT || '4153');
@@ -9,11 +10,13 @@ app.set('port', port);
 var server = createServer(app);
 
 sequelize.sync().then(function () {
-    server.listen(port, function () {
-        debug('Express server listening on port ' + port);
+    sequelizeGC.sync().then(function () {
+        server.listen(port, function () {
+            debug('Express server listening on port  ' + port);
+        });
+        server.on('error', onError);
+        server.on('listening', onListening);
     });
-    server.on('error', onError);
-    server.on('listening', onListening);
 });
 
 function normalizePort(val) {
