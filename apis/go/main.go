@@ -10,6 +10,7 @@ import (
 	"context"
 
 	_ "github.com/denisenkom/go-mssqldb"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 )
@@ -82,13 +83,23 @@ func publicacion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.Unmarshal(reqBody, &newPublicacion)
+
+	//Primera base azure
 	datos := ingresar_publicacion(&newPublicacion)
 	lista := ingresar_hashtags(&newPublicacion)
 	ingresar_publicacion_hash(datos, lista)
 
+	//Segunda base google cloud
+	datos_gcp := ingresar_publicacion_google(&newPublicacion)
+	lista_gcp := ingresar_hashtags_google(&newPublicacion)
+	ingresar_publicacion_hash_google(datos_gcp, lista_gcp)
+
+	var salida Salidas
+	salida.Mensaje = "Ok"
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
-	json.NewEncoder(w).Encode(newPublicacion)
+	json.NewEncoder(w).Encode(salida)
 }
 
 //----------- Operaciones base 1
@@ -198,7 +209,6 @@ func ingresar_hashtags(newPub *Publicacion) ListaHash {
 	return lista_salida
 }
 
-//Revisar problema de fk
 func ingresar_publicacion_hash(publicacionId PublicacionId, lista ListaHash) {
 	ctx := context.Background()
 
@@ -209,11 +219,125 @@ func ingresar_publicacion_hash(publicacionId PublicacionId, lista ListaHash) {
 
 	for i := len(lista.hashtags_id) - 1; i >= 0; i-- {
 		tsql := `INSERT INTO PublicacionesHashtags(PublicacionId,HashtagId) VALUES(@Publicacion,@Hashtag);`
-		fmt.Printf("%d", publicacionId.id)
-		fmt.Printf("%d", lista.hashtags_id[i])
+		//fmt.Printf("%d", publicacionId.id)
+		//fmt.Printf("%d", lista.hashtags_id[i])
 		_, err = db.ExecContext(ctx, tsql,
 			sql.Named("Publicacion", publicacionId.id),
 			sql.Named("Hashtag", lista.hashtags_id[i]))
+		if err != nil {
+			panic(err.Error())
+		}
+	}
+}
+
+// ============= ACA COMIENZA LA PARTE PARA INGRESAR GOOGLE CLOUD
+
+func getDB2() (*sql.DB, error) {
+	return sql.Open("mysql", "root:DqDDyZl8PmK9n6Zj@tcp(35.193.66.235:3306)/proyecto1")
+}
+
+func ingresar_publicacion_google(newPub *Publicacion) PublicacionId {
+
+	db, err := getDB2()
+	if err != nil {
+		panic(err.Error)
+	}
+
+	stmt, err := db.Prepare("INSERT INTO Publicaciones(nombre,comentario,fecha, upvotes,downvotes) VALUES(?, ?, STR_TO_DATE(?, '%d/%m/%Y'), ?, ?)")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	//obtenemos la base de datos
+	_, err = stmt.Exec(newPub.Nombre, newPub.Comentario, newPub.Fecha, newPub.Upvotes, newPub.Downvotes)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	//Preparando la extraccion de al id
+	result, err := db.Query("SELECT LAST_INSERT_ID() as id from Publicaciones")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	defer result.Close()
+
+	var datos PublicacionId
+
+	for result.Next() {
+
+		err := result.Scan(&datos.id)
+		if err != nil {
+			panic(err.Error())
+		}
+		return datos
+	}
+	return datos
+}
+
+func ingresar_hashtags_google(newPub *Publicacion) ListaHash {
+	db, err := getDB2()
+	if err != nil {
+		panic(err.Error)
+	}
+	var lista_salida ListaHash
+
+	for i := len(newPub.Hashtags) - 1; i >= 0; i-- {
+		//Preparando la extraccion de al id
+		result, err := db.Query("SELECT id from Hashtags where comentario =?", newPub.Hashtags[i])
+		if err != nil {
+			panic(err.Error())
+		}
+		defer result.Close()
+		var datos HashTagId
+		//si existe lo obtengo
+		if result.Next() {
+			err := result.Scan(&datos.id)
+			if err != nil {
+				panic(err.Error())
+			}
+			lista_salida.hashtags_id = append(lista_salida.hashtags_id, datos.id)
+			//Si no existe lo mando a traer
+		} else {
+			stmt, err := db.Prepare("INSERT INTO Hashtags(comentario) VALUES(?)")
+			if err != nil {
+				panic(err.Error())
+			}
+
+			_, err = stmt.Exec(newPub.Hashtags[i])
+			if err != nil {
+				panic(err.Error())
+			}
+			result, err := db.Query("SELECT id from Hashtags where comentario =?", newPub.Hashtags[i])
+			if err != nil {
+				panic(err.Error())
+			}
+			defer result.Close()
+			for result.Next() {
+				err := result.Scan(&datos.id)
+				if err != nil {
+					panic(err.Error())
+				}
+				lista_salida.hashtags_id = append(lista_salida.hashtags_id, datos.id)
+			}
+		}
+
+	}
+	return lista_salida
+}
+
+func ingresar_publicacion_hash_google(publicacionId PublicacionId, lista ListaHash) {
+	db, err := getDB2()
+	if err != nil {
+		panic(err.Error)
+	}
+
+	for i := len(lista.hashtags_id) - 1; i >= 0; i-- {
+		stmt, err := db.Prepare("INSERT INTO PublicacionesHashtags(PublicacionId,HashtagId) VALUES(?,?)")
+		if err != nil {
+			panic(err.Error())
+		}
+		_, err = stmt.Exec(publicacionId.id, lista.hashtags_id[i])
 		if err != nil {
 			panic(err.Error())
 		}
