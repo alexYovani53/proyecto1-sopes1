@@ -6,6 +6,7 @@ COPY . .
 RUN go get github.com/gorilla/mux
 RUN go get -u github.com/go-sql-driver/mysql
 RUN go get github.com/rs/cors
+RUN go get github.com/denisenkom/go-mssqldb
 
 EXPOSE 3002
 

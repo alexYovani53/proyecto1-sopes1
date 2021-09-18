@@ -7,7 +7,9 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	_ "github.com/go-sql-driver/mysql"
+	"context"
+
+	_ "github.com/denisenkom/go-mssqldb"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
 )
@@ -34,15 +36,19 @@ type Fin struct {
 }
 
 type PublicacionId struct {
-	id_publicacion int
+	id int
 }
 
 type HashTagId struct {
-	id_hashtag int
+	id int
 }
 
 type ListaHash struct {
 	hashtags_id []int
+}
+
+type Salidas struct {
+	Mensaje string `json:mensaje`
 }
 
 func indexRoute(w http.ResponseWriter, r *http.Request) {
@@ -76,66 +82,68 @@ func publicacion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.Unmarshal(reqBody, &newPublicacion)
-	//Ingresar los datos a la base numero 1
 	datos := ingresar_publicacion(&newPublicacion)
 	lista := ingresar_hashtags(&newPublicacion)
 	ingresar_publicacion_hash(datos, lista)
-
-	//ingresar los datos a la base numero2
-	datos = ingresar_publicacion_base2(&newPublicacion)
-	lista = ingresar_hashtags_base2(&newPublicacion)
-	ingresar_publicacion_hash_base2(datos, lista)
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
 	json.NewEncoder(w).Encode(newPublicacion)
 }
 
-//----------- Operaciones baase 1
+//----------- Operaciones base 1
 func getDB() (*sql.DB, error) {
-	return sql.Open("mysql", "root:proyectosusac@tcp(127.0.0.1:3306)/proyecto1")
+	var server = "sopes-1.database.windows.net"
+	var port = 1433
+	var user = "sopes-1"
+	var password = "DqDDyZl8PmK9n6Zj"
+	var database = "proyecto-1"
+	var connString = fmt.Sprintf("server=%s;user id=%s;password=%s;port=%d;database=%s;",
+		server, user, password, port, database)
+	return sql.Open("sqlserver", connString)
+
 }
 
 func ingresar_publicacion(newPub *Publicacion) PublicacionId {
 
+	ctx := context.Background()
+
 	db, err := getDB()
 	if err != nil {
 		panic(err.Error)
 	}
 
-	stmt, err := db.Prepare("INSERT INTO publicacion(nombre,comentario,fecha, upvotes,downvotes) VALUES(?, ?, STR_TO_DATE(?, '%d/%m/%Y'), ?, ?)")
+	tsql := `INSERT INTO Publicaciones(nombre,comentario,fecha, upvotes,downvotes) 
+	VALUES(@Nombre, @Comentario, CONVERT(DATETIME,@Fecha,103), @Upvotes, @Downvotes);
+	select @@IDENTITY as id;`
+
+	stmt, err := db.Prepare(tsql)
 	if err != nil {
 		panic(err.Error())
 	}
 
-	//obtenemos la base de datos
-	_, err = stmt.Exec(newPub.Nombre, newPub.Comentario, newPub.Fecha, newPub.Upvotes, newPub.Downvotes)
-	if err != nil {
-		panic(err.Error())
-	}
+	defer stmt.Close()
 
-	//Preparando la extraccion de al id
-	result, err := db.Query("SELECT id_publicacion from publicacion where nombre = ? and comentario = ?", newPub.Nombre, newPub.Comentario)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	defer result.Close()
+	row := stmt.QueryRowContext(
+		ctx,
+		sql.Named("Nombre", newPub.Nombre),
+		sql.Named("Comentario", newPub.Comentario),
+		sql.Named("Fecha", newPub.Fecha),
+		sql.Named("Upvotes", newPub.Upvotes),
+		sql.Named("Downvotes", newPub.Downvotes))
 
 	var datos PublicacionId
-
-	for result.Next() {
-
-		err := result.Scan(&datos.id_publicacion)
-		if err != nil {
-			panic(err.Error())
-		}
-		return datos
+	err = row.Scan(&datos.id)
+	if err != nil {
+		panic(err.Error())
 	}
+
 	return datos
 }
 
 func ingresar_hashtags(newPub *Publicacion) ListaHash {
+	ctx := context.Background()
+
 	db, err := getDB()
 	if err != nil {
 		panic(err.Error)
@@ -144,173 +152,68 @@ func ingresar_hashtags(newPub *Publicacion) ListaHash {
 
 	for i := len(newPub.Hashtags) - 1; i >= 0; i-- {
 		//Preparando la extraccion de al id
-		result, err := db.Query("SELECT id_hashtag from hashtag where descripcion =?", newPub.Hashtags[i])
+		tsql := `SELECT id from Hashtags where comentario=@Comentario;`
+
+		result, err := db.QueryContext(
+			ctx,
+			tsql,
+			sql.Named("Comentario", newPub.Hashtags[i]))
 		if err != nil {
 			panic(err.Error())
 		}
+
 		defer result.Close()
 		var datos HashTagId
 		//si existe lo obtengo
 		if result.Next() {
-			err := result.Scan(&datos.id_hashtag)
+			err := result.Scan(&datos.id)
 			if err != nil {
 				panic(err.Error())
 			}
-			lista_salida.hashtags_id = append(lista_salida.hashtags_id, datos.id_hashtag)
+			lista_salida.hashtags_id = append(lista_salida.hashtags_id, datos.id)
 			//Si no existe lo mando a traer
 		} else {
-			stmt, err := db.Prepare("INSERT INTO hashtag(descripcion) VALUES(?)")
+			tsql = `INSERT INTO Hashtags (comentario) VALUES(@Comentario);
+					SELECT @@IDENTITY as id;`
+
+			stmt, err := db.Prepare(tsql)
 			if err != nil {
 				panic(err.Error())
 			}
 
-			_, err = stmt.Exec(newPub.Hashtags[i])
+			defer stmt.Close()
+
+			row := stmt.QueryRowContext(
+				ctx,
+				sql.Named("Comentario", newPub.Hashtags[i]))
+
+			err = row.Scan(&datos.id)
 			if err != nil {
 				panic(err.Error())
 			}
-			result, err := db.Query("SELECT id_hashtag from hashtag where descripcion =?", newPub.Hashtags[i])
-			if err != nil {
-				panic(err.Error())
-			}
-			defer result.Close()
-			for result.Next() {
-				err := result.Scan(&datos.id_hashtag)
-				if err != nil {
-					panic(err.Error())
-				}
-				lista_salida.hashtags_id = append(lista_salida.hashtags_id, datos.id_hashtag)
-			}
+			lista_salida.hashtags_id = append(lista_salida.hashtags_id, datos.id)
 		}
 
 	}
 	return lista_salida
 }
 
+//Revisar problema de fk
 func ingresar_publicacion_hash(publicacionId PublicacionId, lista ListaHash) {
+	ctx := context.Background()
+
 	db, err := getDB()
 	if err != nil {
 		panic(err.Error)
 	}
 
 	for i := len(lista.hashtags_id) - 1; i >= 0; i-- {
-		stmt, err := db.Prepare("INSERT INTO publicacionhashtag(id_publicacion,id_hashtag) VALUES(?,?)")
-		if err != nil {
-			panic(err.Error())
-		}
-		_, err = stmt.Exec(publicacionId.id_publicacion, lista.hashtags_id[i])
-		if err != nil {
-			panic(err.Error())
-		}
-	}
-}
-
-// -----------Operaciones base 2
-func getDB_2() (*sql.DB, error) {
-	return sql.Open("mysql", "root:proyectosusac@tcp(127.0.0.1:3306)/respaldo")
-}
-
-func ingresar_publicacion_base2(newPub *Publicacion) PublicacionId {
-
-	db, err := getDB_2()
-	if err != nil {
-		panic(err.Error)
-	}
-
-	stmt, err := db.Prepare("INSERT INTO publicacion(nombre,comentario,fecha, upvotes,downvotes) VALUES(?, ?, STR_TO_DATE(?, '%d/%m/%Y'), ?, ?)")
-	if err != nil {
-		panic(err.Error())
-	}
-
-	//obtenemos la base de datos
-	_, err = stmt.Exec(newPub.Nombre, newPub.Comentario, newPub.Fecha, newPub.Upvotes, newPub.Downvotes)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	//Preparando la extraccion de al id
-	result, err := db.Query("SELECT id_publicacion from publicacion where nombre = ? and comentario = ?", newPub.Nombre, newPub.Comentario)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	defer result.Close()
-
-	var datos PublicacionId
-
-	for result.Next() {
-
-		err := result.Scan(&datos.id_publicacion)
-		if err != nil {
-			panic(err.Error())
-		}
-		return datos
-	}
-	return datos
-}
-
-func ingresar_hashtags_base2(newPub *Publicacion) ListaHash {
-	db, err := getDB_2()
-	if err != nil {
-		panic(err.Error)
-	}
-	var lista_salida ListaHash
-
-	for i := len(newPub.Hashtags) - 1; i >= 0; i-- {
-		//Preparando la extraccion de al id
-		result, err := db.Query("SELECT id_hashtag from hashtag where descripcion =?", newPub.Hashtags[i])
-		if err != nil {
-			panic(err.Error())
-		}
-		defer result.Close()
-		var datos HashTagId
-		//si existe lo obtengo
-		if result.Next() {
-			err := result.Scan(&datos.id_hashtag)
-			if err != nil {
-				panic(err.Error())
-			}
-			lista_salida.hashtags_id = append(lista_salida.hashtags_id, datos.id_hashtag)
-			//Si no existe lo mando a traer
-		} else {
-			stmt, err := db.Prepare("INSERT INTO hashtag(descripcion) VALUES(?)")
-			if err != nil {
-				panic(err.Error())
-			}
-
-			_, err = stmt.Exec(newPub.Hashtags[i])
-			if err != nil {
-				panic(err.Error())
-			}
-			result, err := db.Query("SELECT id_hashtag from hashtag where descripcion =?", newPub.Hashtags[i])
-			if err != nil {
-				panic(err.Error())
-			}
-			defer result.Close()
-			for result.Next() {
-				err := result.Scan(&datos.id_hashtag)
-				if err != nil {
-					panic(err.Error())
-				}
-				lista_salida.hashtags_id = append(lista_salida.hashtags_id, datos.id_hashtag)
-			}
-		}
-
-	}
-	return lista_salida
-}
-
-func ingresar_publicacion_hash_base2(publicacionId PublicacionId, lista ListaHash) {
-	db, err := getDB_2()
-	if err != nil {
-		panic(err.Error)
-	}
-
-	for i := len(lista.hashtags_id) - 1; i >= 0; i-- {
-		stmt, err := db.Prepare("INSERT INTO publicacionhashtag(id_publicacion,id_hashtag) VALUES(?,?)")
-		if err != nil {
-			panic(err.Error())
-		}
-		_, err = stmt.Exec(publicacionId.id_publicacion, lista.hashtags_id[i])
+		tsql := `INSERT INTO PublicacionesHashtags(PublicacionId,HashtagId) VALUES(@Publicacion,@Hashtag);`
+		fmt.Printf("%d", publicacionId.id)
+		fmt.Printf("%d", lista.hashtags_id[i])
+		_, err = db.ExecContext(ctx, tsql,
+			sql.Named("Publicacion", publicacionId.id),
+			sql.Named("Hashtag", lista.hashtags_id[i]))
 		if err != nil {
 			panic(err.Error())
 		}
