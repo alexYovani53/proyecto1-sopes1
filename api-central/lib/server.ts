@@ -3,6 +3,7 @@ import { app } from './app';
 import { sequelize } from './sequelize';
 import { sequelizeGC } from './sequelize';
 import * as debug from 'debug';
+import * as PulbicacionesController from './controllers/Publicacion';
 
 var port = normalizePort(process.env.PORT || '4153');
 app.set('port', port);
@@ -16,6 +17,7 @@ sequelize.sync().then(function () {
         });
         server.on('error', onError);
         server.on('listening', onListening);
+        PulbicacionesController.scheduleVerPublicaciones();
     });
 });
 
