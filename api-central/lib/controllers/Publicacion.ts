@@ -46,9 +46,17 @@ export const crearPublicacion = async function (req, res) {
             upvotes: data.upvotes,
             downvotes: data.downvotes,
         }, { transaction: transaction });
+
+        const resultGC = await PublicacionGC.create({
+            nombre: data.nombre,
+            comentario: data.comentario,
+            fecha: data.fecha,
+            upvotes: data.upvotes,
+            downvotes: data.downvotes,
+        }, { transaction: transaction });
         
         await transaction.commit();
-        return res.status(201).send({ error: false, result: result });
+        return res.status(201).send({ error: false, result: { PublicacionAzure: result, PublicacionGC: resultGC } });
     } catch (error) {
         logger.error('Creación de publicacion con error: ' + error);
         await transaction.rollback();
