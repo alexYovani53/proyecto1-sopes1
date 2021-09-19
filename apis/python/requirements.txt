@@ -2,3 +2,4 @@ Flask==2.0.1
 Flask-Cors==3.0.10
 Flask-MySQL==1.5.2
 pymssql==2.2.2
+google-cloud-pubsub==2.8.0

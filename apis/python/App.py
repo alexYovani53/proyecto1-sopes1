@@ -5,6 +5,9 @@ import pymysql
 pymysql.install_as_MySQLdb()
 import MySQLdb
 
+
+
+
 app = Flask(__name__)
 
 
@@ -35,6 +38,9 @@ def obtener_conexion2():
 #configuracion de cors, todos los origenes
 CORS(app)
 
+##configuracion del google pub sub
+
+
 @app.route('/')
 def index():
     return jsonify({"mensaje": "API PYTHON READY"})
@@ -51,8 +57,9 @@ def finalizarCarga():
         "Api": "python",
         "Bd": "cosmosDB y CloudSQL"
     }
+    PublicacionGoogle(datos_salida)
     #Esto debe de mandar la notificacion a pub sub google
-    return jsonify(datos_salida)
+    return jsonify({"mensaje": "ok"})
 
 
 @app.route('/publicacion', methods=['POST'])
@@ -218,6 +225,33 @@ def Convert(entrada):
         "downvotes": entrada["downvotes"]
     }
     return new_publicacion
+
+#credencial google
+import os
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="clave.json"
+
+#libreria de pub-sub
+from google.cloud import pubsub_v1
+project_id = "sopes1-proyecto1-325117"
+topic_id = "mensajes"
+publisher = pubsub_v1.PublisherClient()
+topic_path = publisher.topic_path(project_id, topic_id)
+
+def PublicacionGoogle(datos_salida):
+    data = "Guardados: {0}, Tiempo de Carga: {1}, Api: Python, Bases: Cosmos CloudSQL".format(
+        datos_salida["Guardados"],datos_salida["TiempoDeCarga"]
+    )
+    data = data.encode("utf-8")
+    # Add two attributes, origin and username, to the message
+    future = publisher.publish(
+        topic_path, data, origin="python-sample", username="gcp"
+    )
+        
+    print(future.result())
+
+print(f"Published messages with custom attributes to {topic_path}.")
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, port=3001)
