@@ -228,6 +228,7 @@ def Convert(entrada):
 
 #credencial google
 import os
+import json
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"]="clave.json"
 
 #libreria de pub-sub
@@ -238,15 +239,11 @@ publisher = pubsub_v1.PublisherClient()
 topic_path = publisher.topic_path(project_id, topic_id)
 
 def PublicacionGoogle(datos_salida):
-    data = "Guardados: {0}, Tiempo de Carga: {1}, Api: Python, Bases: Cosmos CloudSQL".format(
-        datos_salida["Guardados"],datos_salida["TiempoDeCarga"]
-    )
-    data = data.encode("utf-8")
+    data = json.dumps(datos_salida).encode("utf-8")
     # Add two attributes, origin and username, to the message
     future = publisher.publish(
         topic_path, data, origin="python-sample", username="gcp"
     )
-        
     print(future.result())
 
 print(f"Published messages with custom attributes to {topic_path}.")
