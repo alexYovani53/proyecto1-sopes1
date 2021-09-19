@@ -1,18 +1,23 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
-
-	"context"
+	"os"
 
 	_ "github.com/denisenkom/go-mssqldb"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
+
+	// Leer variables de entorno
+	"cloud.google.com/go/pubsub"
+	"github.com/joho/godotenv"
 )
 
 type Post struct {
@@ -69,6 +74,14 @@ func finalizarCarga(w http.ResponseWriter, r *http.Request) {
 	newCarga.Guardados = newCantidad.Guardados
 	newCarga.TiempoDeCarga = newCantidad.TiempoDeCarga
 	newCarga.Bd = "CosmosBD y CloudSQL"
+
+	msg, err := json.Marshal(newCarga)
+
+	if err != nil {
+		fmt.Fprintf(w, "ParseForm() err: %v", err)
+		return
+	}
+	publish(string(msg))
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
@@ -344,7 +357,47 @@ func ingresar_publicacion_hash_google(publicacionId PublicacionId, lista ListaHa
 	}
 }
 
+func CargarCredenciales() {
+	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "./clave.json")
+}
+
+func goDotEnvVariable(key string) string {
+
+	// Leer el archivo .env ubicado en la carpeta actual
+	err := godotenv.Load(".env")
+
+	// Si existio error leyendo el archivo
+	if err != nil {
+		log.Fatalf("Error cargando las variables de entorno")
+	}
+
+	// Enviar la variable de entorno que se necesita leer
+	return os.Getenv(key)
+}
+
+func publish(msg string) error {
+	projectID := goDotEnvVariable("PROJECT_ID")
+	topicID := goDotEnvVariable("TOPIC_ID")
+	ctx := context.Background()
+	client, err := pubsub.NewClient(ctx, projectID)
+	if err != nil {
+		fmt.Println("error")
+		return fmt.Errorf("pubsub.NewClient: %v", err)
+	}
+	t := client.Topic(topicID)
+	result := t.Publish(ctx, &pubsub.Message{Data: []byte(msg)})
+	id, err := result.Get(ctx)
+	if err != nil {
+		fmt.Println("error")
+		fmt.Println(err)
+		return fmt.Errorf("Error: %v", err)
+	}
+	fmt.Println("Published a message; msg ID: %v\n", id)
+	return nil
+}
+
 func main() {
+	CargarCredenciales()
 	//rutas del servidor
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/", indexRoute).Methods("GET")
