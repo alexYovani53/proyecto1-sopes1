@@ -1,0 +1,351 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+
+:root{
+    --tamano-completo:240px;
+    --tamano-corto:78px;
+
+    --tamano-iconos:50px;
+}
+
+
+body{
+    position: relative;
+    min-height: 100%;
+    height: 100vh;
+}
+body::-webkit-scrollbar{
+    display: none;
+}
+
+.superior,#root{
+    height: 100%;
+    min-height: 100%;
+
+}
+
+.sidebar{
+
+    position: fixed;
+    top: 0;
+    left: 0;
+
+    height: 100%;
+    width: var(--tamano-corto);
+    background: #06bdca;
+
+    padding: 6px 14px;
+
+    transition: all 0.5s ;
+}
+
+.sidebar.active{
+    width: var(--tamano-completo);
+}
+
+
+/* ESTILOS LOGO CONTENEDOR */
+
+.sidebar .logo_content .logo{
+    color: #fff;
+    display: flex;
+    height: var(--tamano-iconos);
+    width: 100%;
+
+    align-items: center;
+    justify-content: space-around;
+
+    opacity: 0;
+    pointer-events: none;
+
+    transition: all 0.2s;
+}
+
+.sidebar.active .logo_content .logo{
+
+    opacity: 1;
+    pointer-events: none;    
+}
+
+/* FIN ********************  ESTILOS LOGO CONTENEDOR */
+
+
+/* ESTILOS BOTON BUSCAR*/
+
+.sidebar #botonAccion{
+    color: #fff;
+
+    position: absolute;
+    top: 6px;
+    left: 50%;
+
+    font-size: 20px;
+
+    height: var(--tamano-iconos);
+    width: var(--tamano-iconos);
+
+    text-align: center;
+    line-height:var(--tamano-iconos);
+
+    transform: translateX(-50%);
+    transition: all 0.5s ;  
+
+}
+
+.sidebar.active #botonAccion{  
+    
+    transition: all 0.2s ;  
+    left: 90%;
+}
+
+/* FIN ***************ESTILOS BOTON BUSCAR*/
+
+.sidebar .nav_lista{
+    margin-top: 20px;
+}
+
+.nav_lista .item_lista{
+    height: var(--tamano-iconos);
+    width: 100%;
+
+    position: relative;
+    margin: 0 5px;
+    line-height: var(--tamano-iconos);
+}
+
+
+
+
+
+/* TOOLTIP'S PROPIEDADES*/
+
+.sidebar .nav_lista .item_lista .tooltip{
+    position: absolute;
+    display: block;
+    top:0;
+    left: 122px;
+
+    width: 122px;
+    height: 35px;
+    background: #fff;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.5);
+    border-radius: 12px;
+    line-height: 35px;
+
+    transform:  translateY(-50%);
+    transition:0s;
+
+    opacity: 0;
+    pointer-events: none;
+
+    text-align: center;
+
+}
+
+.sidebar.active .nav_lista .item_lista .tooltip{
+    display: none;
+}
+
+
+.nav_lista .item_lista:hover .tooltip{
+
+    transition: all 0.1s ease-in-out;
+    opacity: 1;
+    top: 50%;
+}
+
+/* FIN ************* TOOLTIP'S PROPIEDADES*/
+
+
+/* INPUT SEARCH E ICONO */
+.nav_lista .item_lista input{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+
+    top: 0;
+    left: 0;
+    border-radius: 12px;
+
+    border: none;
+
+    background: #06bdca;
+    padding-left: var(--tamano-iconos);
+
+    font-size: 18px;
+    color: #fff;
+    
+}
+
+.nav_lista .item_lista .fa-search{
+    position: absolute;
+    z-index: 99;
+    color: #fff;
+
+    top: 0;
+    left: 0;
+}
+
+/* fin ************ input search e icono */
+
+
+/* PROPIEDADES class="nombre_enlaces" */
+
+.sidebar .nombre_enlaces {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.sidebar.active .nombre_enlaces{
+    opacity: 1;
+    pointer-events: all;
+}
+
+
+/* FIN *************** PROPIEDADES class="nombre_enlaces"*/
+
+
+/* ESTILOS ELEMENTO a*/
+.item_lista a{
+    
+    border-radius: 10px;
+    color: #fff;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+
+    transition: all 0.1s ease-in;
+
+    white-space: nowrap;                     /* borramos los espacios en blanco de un texto*/
+}
+
+
+.item_lista a:hover{
+    color: #11101d;
+    background: #fff;
+}
+
+
+.item_lista a i{
+    height: var(--tamano-iconos);
+    min-width: var(--tamano-iconos);
+    border-radius: 50%;
+    text-align: center;
+    line-height: var(--tamano-iconos);
+}
+
+/* FIN ******************* ESTILOS ELEMENTO a */
+
+
+/* footer sidebar */
+
+.sidebar .perfil_content{
+    position: absolute;
+    color: #fff;
+    bottom: 0;
+    left: 0;
+
+    width: 100%;
+}
+
+.sidebar .perfil_content .perfil{
+    position: relative;
+    padding: 10px 5px;
+    height: 65px;
+
+    background: #06bdca;
+
+}
+
+.sidebar .perfil_content .perfil .detalle_perfil{
+    display: flex;
+    align-items: center;
+    opacity: 0;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+
+.sidebar.active .perfil_content .perfil .detalle_perfil{
+    opacity: 1;
+    pointer-events: all;
+}
+
+
+.detalle_perfil img{
+    width: 45px;
+    height: 45px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.detalle_perfil .nombre_content{
+    margin-left: 10px;
+}
+
+
+.nombre_content .trabajo{
+    font-size: 12px;
+    font-weight: 400;
+}
+
+
+/* BOTON SALIR */ 
+.perfil #salir{
+    position: absolute;
+    top: 10px;
+    left: 50%;
+
+    min-width: 45px;
+    line-height: 45px;
+    font-size: 18px;
+    border-radius: 12px;
+    text-align: center;
+
+    transform: translateX(-50%) rotate(0);
+    transition: all 0.5s;
+    transform-origin: center center;
+}
+
+.sidebar.active .perfil #salir{
+    left: 88%;
+}
+
+
+.perfil #salir:hover{
+    transform: translateX(-50%) rotate(180deg);
+}
+
+/* FIN ************* BOTON SALIR
+
+
+/* fin **************** footer sidebar*/
+
+
+
+
+/* notificacion*/
+.notificacion{
+    position: absolute;
+    top: 0;
+    right: -10px;
+    display: none;
+}
+
+.notificacion i{
+    font-size: 1.5rem;
+    color: rgb(76, 0, 255);
+}
+
+.notificacion h5{
+    position: absolute;
+    color: rgb(37, 83, 68);
+}
+
+.notificacion.llegoNotificacion{
+    display: block;
+}

@@ -12,15 +12,24 @@ import (
 
 // Estructura para guardar los datos del json
 type Data struct {
-	Name          string `json:"name"`
-	Msg  		  string `json:"msg"`
+	Nombre          string `json:"nombre"`
+	Comentario      string `json:"comentario"`
+	Fecha			string `json:"fecha"`
+	Hashtags        []string    `json:"hashtags"`
+	Upvotes		    int    `json:"upvotes"`
+	Downvotes	    int    `json:"downvotes"`
+}
+
+type Carga struct {
+	Guardados 	   int `json:"guardados"`
+	TiempoDeCarga  int `json:"tiempoDeCarga"`
 }
 
 // Sincronizar los hilos
 var wg sync.WaitGroup
 
 // url : la ruta a la que deseamos enviar
-var url string
+var urlDireccion string
 
 // Control
 var exitosos int
@@ -34,8 +43,8 @@ func main() {
 	// amount : cantidad de datos del archivo que queremos enviar
 	var threads, amount int
 
-	fmt.Printf("Ingresa la url a dónde deseeas enviar los datos: ")
-	fmt.Scanf("%s\n", &url)
+	fmt.Printf("Ingresa la Direccion a dónde deseeas enviar los datos: ")
+	fmt.Scanf("%s\n", &urlDireccion)
 	fmt.Printf("Ingresa la cantidad de hilos que desea utilizar: ")
 	fmt.Scanf("%d\n", &threads)
 	fmt.Printf("Ingresa la cantidad de datos que desea enviar: ")
@@ -43,13 +52,13 @@ func main() {
 	// fmt.Printf("Ingresa la ruta del archivo: ")
 	// fmt.Scanf("%s\n", &path)
 
-	readFile(path, threads, amount, url)
+	readFile(path, threads, amount, urlDireccion)
 }
 
-func readFile(path string, threads int, amount int, url string) {
+func readFile(path string, threads int, amount int, urlDireccion string) {
 
 	// content : aquí guardaremos el contenido del archivo
-	content, err := ioutil.ReadFile("traffic.json")
+	content, err := ioutil.ReadFile("entrada.json")
 
 	// si existe algún error, entraremos en modo pánico, con defer podemos recuperarnos e imprimir dónde ocurrió el error
 	defer func() {
@@ -71,6 +80,7 @@ func readFile(path string, threads int, amount int, url string) {
 		panic(err2)
 	}
 
+
 	aux := len(datos)
 	j := 0
 
@@ -87,12 +97,15 @@ func readFile(path string, threads int, amount int, url string) {
 		}
 	}
 
+	fmt.Println(datos)
 
 	cant := amount / threads
 	threadsNumber(datos, cant, threads, amount)
 }
 
 func threadsNumber(datos []Data, cant int, threads int, amount int) {
+
+	start:= time.Now()
 
 	if threads == 1 {
 		wg.Add(1)
@@ -137,18 +150,36 @@ func threadsNumber(datos []Data, cant int, threads int, amount int) {
 	// } 
 
 	
-	fmt.Println(exitosos)
-	fmt.Println(errores)
+	fmt.Println("segundos %f",time.Since(start)/1000)
+	fmt.Println("exitosos %d",exitosos)
+	fmt.Println("errores %d",errores)
+
+	tiempoFinal := int(time.Since(start)/1000)
+
+	DataFinalizacion := Carga{ Guardados: exitosos,TiempoDeCarga: tiempoFinal}
+	e, _ := json.Marshal(DataFinalizacion)
+
+	resp, err := http.Post(urlDireccion+"/finalizarCarga", "application/json", bytes.NewBuffer(e) )
+	if err != nil {
+		fmt.Printf("No se ha podido enviar la información: %s\n", err)
+	}
+
+	var res map[string]interface{}
+    json.NewDecoder(resp.Body).Decode(&res)
+    fmt.Println(res)
 }
 
 func mostrar(datos []Data, init int, cant int) {
+
+
+
 	for i := init; i < cant; i++ {
 
 		// Convertimos a json el objeto en turno
 		jsonData, _ := json.Marshal(datos[i])
 
 		// Hacemos la insersión en la ruta que nos dio el usuario y le mandamos el objeto json
-		_, err := http.Post(url, "application/json", bytes.NewBuffer(jsonData))
+		_, err := http.Post(urlDireccion+"/publicacion", "application/json", bytes.NewBuffer(jsonData))
 		if err != nil {
 			fmt.Printf("No se ha podido enviar la información: %s\n", err)
 			errores += 1
@@ -159,4 +190,5 @@ func mostrar(datos []Data, init int, cant int) {
 		time.Sleep(time.Millisecond * 10)
 	}
 	defer wg.Done()
+
 }

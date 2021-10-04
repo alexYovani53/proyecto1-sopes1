@@ -1,5 +1,7 @@
 # Importamos la utileria de JSON para leer nuestro archivo
 import json
+import time
+import requests
 
 # Importamos la utileria random para obtener numeros random en un rango
 from random import random, randrange
@@ -61,7 +63,7 @@ class Reader():
         # Ya que leeremos un archivo, es mejor realizar este proceso con un Try Except
         try:
             # Asignamos el valor del archivo traffic.json a la variable data_file
-            with open("traffic.json", 'r') as data_file:
+            with open("entrada.json", 'r') as data_file:
                 # Con el valor que leemos de data_file vamos a cargar el array con los datos
                 self.array = json.loads(data_file.read())
             # Mostramos en consola que hemos finalizado
@@ -83,6 +85,8 @@ class MessageTraffic(HttpUser):
     # Este metodo se ejecutara cada vez que empecemos una prueba
     # Este metodo se ejecutara POR USUARIO (o sea, si definimos 3 usuarios, se ejecutara 3 veces y tendremos 3 archivos)
     def on_start(self):
+        
+        self.inicio = time.time()
         print (">> MessageTraffic: Iniciando el envio de tráfico")
         # Iniciaremos nuestra clase reader
         self.reader = Reader()
@@ -108,8 +112,9 @@ class MessageTraffic(HttpUser):
             # printDebug (data_to_send)
 
             # Enviar los datos que acabamos de obtener
-            response = self.client.post("/", json=random_data)
-            self.exitos = self.exitos + 1
+            response = self.client.post("/publicacion", json=random_data)
+            if(response.status_code==200):
+                self.exitos = self.exitos + 1
 
         # En este segmento paramos la ejecución del proceso de creación de tráfico
         else:
@@ -126,5 +131,13 @@ class MessageTraffic(HttpUser):
 
     
     def on_stop(self):
-        print(self.exitos)
+        
+        fin = time.time()
+        diferencia = fin - self.inicio
+        print("tiempo",diferencia)
+        print("Exitos",self.exitos)
+
+        response = self.client.post('/finalizarCarga',json={"guardados":self.exitos,"tiempoDeCarga":diferencia})
+        print(response)
+
         return super().on_stop()

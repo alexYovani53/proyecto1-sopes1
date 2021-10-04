@@ -1,4 +1,4 @@
-obj-m += cpu_modulo_201602912.o
+obj-m += cpu_201602912.o
 
 
 all:

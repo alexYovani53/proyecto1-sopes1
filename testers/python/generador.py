@@ -2,6 +2,7 @@
 
 # Importamos la utileria de JSON para leer nuestro archivo
 import threading
+import time
 import json
 import sys
 import requests
@@ -73,7 +74,7 @@ class Reader():
         # Ya que leeremos un archivo, es mejor realizar este proceso con un Try Except
         try:
             # Asignamos el valor del archivo traffic.json a la variable data_file
-            with open("traffic.json", 'r') as data_file:
+            with open("entrada.json", 'r') as data_file:
                 # Con el valor que leemos de data_file vamos a cargar el array con los datos
                 self.array = json.loads(data_file.read())
             # Mostramos en consola que hemos finalizado
@@ -138,11 +139,16 @@ def leer_ip():
 def enviarDato(dato,direccion):
     global exitosos
     global errores
+
+    direccionFinal = direccion + "/publicacion"
+    print (direccionFinal)
+
     try:
-        x = requests.post(direccion, data= dato , headers={ 'Content-Type': 'application/json'})
-        code = x.status_code
-        recieved_data = x.json()        
-        if (code == 200 or code == 201):
+        x = requests.post(direccionFinal, data= dato , headers={ 'Content-Type': 'application/json'})
+        code = x.status_code    
+        print("codigo devuelto")
+        print(code)
+        if (code == 200 or code == 201 or code == 202):
             print(threading.current_thread().getName() + "  Envio a la direccion " + direccion + " -> " + dato)
             exitosos += 1 
         else:
@@ -160,6 +166,8 @@ def enviarDato(dato,direccion):
             errores +=1
 
 def inicioHilo(datosHilo):
+
+
     reader = Reader()
     reader.load()
 
@@ -184,39 +192,21 @@ def inicioHilo(datosHilo):
 
 
 
-def main():
-    
-    leer_ip()
-  
-    reader = Reader()
-    reader.load()
-
-    # Enviar los datos que acabamos de obtener
-    for i in range(int(cantidad)):
-        
-        random_data = reader.pickRandom()
-
-            # Si nuestro lector de datos nos devuelve None, es momento de parar
-        if (random_data is not None):
-            # utilizamos la funcion json.dumps para convertir un objeto JSON de python
-            # a uno que podemos enviar por la web (básicamente lo convertimos a String)
-            data_to_send = json.dumps(random_data)
-            # Imprimimos los datos que enviaremos
-
-            enviarDato(data_to_send,direccion)
-
-        # En este segmento paramos la ejecución del proceso de creación de tráfico
-        else:
-            print(">> MessageTraffic: Envio de tráfico finalizado, no hay más datos que enviar.")
-            # Parar ejecucion del usuario
-
 
 def main2():
+ 
+    global direccion
+    global exitosos
+    global errores
+
     leer_ip()  
     datosHilo =  int(cantidad) / int(Numhilos)
     
     if(datosHilo < 1):
          datosHilo = 1 
+
+
+    inicio = time.time()
 
     hilos =  list()
 
@@ -228,7 +218,34 @@ def main2():
     for x in hilos:
         x.join()
     
-    print(exitosos)
+    print("Datos enviados con exito",exitosos)
+    print("Datos enviados incorrectamente",errores)
+    final = time.time()
+    diferencia = final - inicio
+    direccionFinalCarga = direccion +"/finalizarCarga"
+    print("tiempo envio :",diferencia)
+
+    try:
+        x = requests.post(direccionFinalCarga, 
+                            json= {"guardados":exitosos,"tiempoDeCarga":diferencia} , 
+                            headers={ 'Content-Type': 'application/json'})
+        code = x.status_code    
+        
+        if (code == 200 or code == 201 or code == 202):
+            print(threading.current_thread().getName() + "  Envio a la direccion " + direccionFinalCarga )
+
+        else:
+            print("Error")
+
+            
+    except Exception as e:
+        print("Error")
+        if hasattr(e, 'message'):
+            print(e.message)
+            print()
+        else:
+            print(e)
+
 
 if __name__ == '__main__':
     main2()

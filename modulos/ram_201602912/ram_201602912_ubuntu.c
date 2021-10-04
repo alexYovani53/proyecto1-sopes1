@@ -6,7 +6,7 @@
 #include <linux/proc_fs.h>
 #include <linux/seq_file.h>
 #include <linux/vmstat.h>
-
+#include <linux/version.h> 
 
 
 
@@ -54,13 +54,10 @@ static ssize_t write_proc(struct file *file, const char __user *bufer, size_t co
     return 0;
 }
 
-static struct file_operations operaciones = {
-    .owner = THIS_MODULE,
-    .open = al_abrir,
-    .read = seq_read,
-    .write = write_proc,
-    .release = single_release,
-    .llseek = seq_lseek
+static struct proc_ops operaciones = {
+    .proc_open = al_abrir,
+    .proc_read = seq_read,
+    .proc_write = write_proc
 };
 
 static int __init iniciar_init(void){
