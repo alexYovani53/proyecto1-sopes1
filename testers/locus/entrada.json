@@ -1,0 +1,34 @@
+[
+	{
+		"nombre":"pruebaPreeliminar1",
+		"comentario":"comentario del usuario 1",
+		"fecha":"3/10/2025",
+		"hashtags":["Azure","GCLOUD"],
+		"upvotes":10,
+		"downvotes":9
+	},
+	{
+		"nombre":"pruebaPreeliminar2",
+		"comentario":"comentario del usuario 2",
+		"fecha":"3/10/2025",
+		"hashtags":["GCLOUD","AZURE"],
+		"upvotes":5,
+		"downvotes":1
+	},
+	{
+		"nombre":"pruebaPreeliminar3",
+		"comentario":"comentario del usuario 1",
+		"fecha":"3/10/2025",
+		"hashtags":["GCLOUD","GCLOUD"],
+		"upvotes":5,
+		"downvotes":7
+	},
+	{
+		"nombre":"pruebaPreeliminar4",
+		"comentario":"comentario del usuario 2",
+		"fecha":"3/10/2025",
+		"hashtags":["GCLOUD","AZURE"],
+		"upvotes":7,
+		"downvotes":9
+	}
+]

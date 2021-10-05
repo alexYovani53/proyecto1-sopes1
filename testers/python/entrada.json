@@ -1,0 +1,18 @@
+[
+	{
+		"nombre":"pruebaPreeliminar1",
+		"comentario":"comentario del usuario 1",
+		"fecha":"3/10/2025",
+		"hashtags":["Azure","GCLOUD"],
+		"upvotes":10,
+		"downvotes":3
+	},
+	{
+		"nombre":"pruebaPreeliminar2",
+		"comentario":"comentario del usuario 2",
+		"fecha":"3/10/2025",
+		"hashtags":["GCLOUD","AZURE"],
+		"upvotes":5,
+		"downvotes":1
+	}
+]

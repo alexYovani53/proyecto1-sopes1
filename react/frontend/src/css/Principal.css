@@ -1,0 +1,135 @@
+
+/* home page */
+
+.home_content{
+    position: relative;
+    overflow: hidden;
+    left: 78px;
+    top: 0px;
+    font-size: small;
+    min-height: 100%;
+    height: 100%;
+    max-height: 100%;
+    min-width: 200px;
+    width: calc(100% - 78px);
+    max-width: calc(100% - 78px);
+    transition: all 0.5s;
+
+}
+
+.sidebar.active ~ .home_content {
+    
+    transition: all 0.5s;
+    left: 240px;
+    width: calc(100% -240px);
+    max-width: calc(100% - 240px);
+}
+
+
+
+.eleccionBD{
+    position: relative;
+    display: grid;
+    grid-template-columns: 20% 20%;
+    align-items: center;
+    justify-content: center;
+    column-gap: 40px;
+    height: 40px;
+}
+
+
+.PESTANA{    
+
+    width: 100%;
+    height:100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.PESTANA .text_content{
+    /* background: rgb(255, 230, 0); */
+    width: 90%;
+    margin:15px 10px;
+    height: 450px;    
+    overflow: scroll;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    flex-direction: row;
+}
+
+.PESTANA .text_content::-webkit-scrollbar{
+    display: none;
+}
+
+.itemRadio{
+    height: 80%;
+    background: goldenrod;
+    box-shadow: 1px 0 4px rgb(0, 110, 255);
+    border: 1px solid rgba(0, 255, 21, 0.411);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 15px;
+}
+
+.itemRadio label{
+    font-weight: 700;
+    text-align: center;
+    color: #FFFFFF;
+    text-shadow: 1px 3px 0 #969696, 1px 13px 5px #aba8a8;
+
+}
+.itemRadio .radio{
+    line-height: 40%;
+    width: 50%;
+    height: 80%;
+    text-align: center;
+    background-color: blueviolet;
+}
+
+
+
+
+
+.pagination{
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.itemPagination{
+    box-shadow: 1px 2px 3px black;
+    color:#ffffff;
+    margin: 0 10px;
+    border-radius: 15px;
+    padding: 5px;
+    background: #34e89e;  /* fallback for old browsers */
+    background: -webkit-linear-gradient(to bottom, #1b4657, #2daf79);  /* Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to bottom, #056388, #5ce6ac); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+
+}
+
+.itemPagination:disabled{
+    background: rgba(153, 138, 138, 0.527);
+    
+}
+
+.itemMensaje{
+    font-weight: bold;
+    font-size: 1.5em;
+    line-height: 15px;
+    vertical-align: bottom;
+}
+
+@media (max-width:900px) {
+
+    .itemPagination{
+        width: 45%;
+    }
+
+    .eleccionBD{
+        grid-template-columns: 40% 40%;
+    }
+
+}

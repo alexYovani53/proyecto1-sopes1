@@ -1,0 +1,111 @@
+
+.PESTANA.RESULTADOS{
+    background: white;
+    height:90%;
+    overflow-y: scroll;
+}
+
+.Barra{
+    width: 80%;
+    height: 200px;
+}
+
+.Circulo{
+    width: 350px;
+}
+
+.ConteosDatos{
+    margin: 10px 0;
+    flex-wrap: wrap;
+    display: flex;
+    width: 80%;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.ItemConteo{
+    border: 1px solid black;
+    width: 30%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    -webkit-box-shadow: 5px 5px 15px 5px #000000; 
+    box-shadow: 5px 5px 15px 5px #000000;
+    
+    text-align: center;
+    padding: 10px 0;
+}
+
+.ItemConteo .NumerosConteos{
+    width: 75%;
+}
+
+.ItemConteo i{
+    font-size: 15px;
+    width: 25%;
+}
+
+.Mensajes_tabla{
+    width: 90%;
+}
+
+
+table.ultimosRegistros {
+    font-family: "Times New Roman", Times, serif;
+    border: 1px solid #FFFFFF;
+    width: 100%;
+    height: 199%;
+    text-align: center;
+    border-collapse: collapse;
+  }
+  table.ultimosRegistros td, table.ultimosRegistros th {
+    border: 1px solid #FFFFFF;
+    padding: 2px 1px;
+  }
+  table.ultimosRegistros tbody td {
+    font-size: 13px;
+  }
+  table.ultimosRegistros tr:nth-child(even) {
+    background: #D0E4F5;
+  }
+  table.ultimosRegistros thead {
+    background: #0B6FA4;
+    border-bottom: 5px solid #FFFFFF;
+  }
+  table.ultimosRegistros thead th {
+    font-size: 17px;
+    font-weight: bold;
+    color: #FFFFFF;
+    text-align: center;
+    border-left: 2px solid #FFFFFF;
+  }
+  table.ultimosRegistros thead th:first-child {
+    border-left: none;
+  }
+  
+
+@media (max-width:900px) {
+
+
+
+    .ItemConteo{
+        width: 90%;
+        margin-top: 10px;
+    }
+
+ 
+    .PESTANA.RESULTADOS ::-webkit-scrollbar{
+        display: none;
+    }
+
+    .Barra{
+        width: 95%;
+    }
+
+
+    .Circulo{
+        width: 95%;
+        height: 300px;
+    }
+
+}

@@ -1,0 +1,96 @@
+.CARD{
+    background: rgba(255, 255, 255, 0.623);
+    left: 5px;
+    margin-bottom: 25px;
+    position: relative;
+    width: 40%;
+    min-height: 150px;
+    max-height: 200px;
+    display: flex;
+    flex-direction: column;
+    padding: 5px 15px;
+    border-radius: 15px;
+    box-shadow: 0px 0px 10px rgb(0, 0, 0);
+
+    transition: 0.5s all ;
+}
+
+.CARD:hover{
+    background: rgb(16, 219, 255);
+}
+
+.CARD .Encabezado{
+    display: flex;
+    align-items: center;
+}
+
+.CARD .Encabezado i{
+    font-size: 30px;
+    text-align: center;
+    margin-right: 10px;
+}
+
+.EncabezadoInfo{
+    display: grid;
+}
+
+.EncabezadoInfo .hash{
+    background: rgb(215, 216, 215);
+    border: 1px solid rgb(155, 230, 223);
+    border-radius: 15px;
+}
+
+.CARD .division{
+    border-bottom: 1px solid black;
+}
+
+.CARD .contadores{
+    margin-top: 5px;
+    display: flex;
+    justify-content: space-evenly;
+    border-radius: 20px;
+    align-items: center;
+    background: rgb(181, 240, 235);
+}
+
+.CARD h5{
+    text-align: center;
+    margin: 10px 0 ;
+}
+
+.CARD .contadores .upvotes, .CARD .contadores .downvotes{
+    width: 35px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    margin-left: 15px;
+    background: rgb(98, 98, 236);
+    border-radius: 5px;
+    text-align: center;
+    color: honeydew;
+}
+
+.CARD.ultimo{
+    background: rgb(0, 174, 243);
+}
+
+
+.fecha-flotante{
+    position: absolute;
+    right: -85px;
+    top: 0;
+}
+
+.fecha-flotante:hover{
+    transform: scale(2) translateX(-25px);
+}
+
+
+@media (max-width:900px) {
+    .CARD{
+        width: 80%;
+    }
+
+    .CARD .contadores{
+        font-size: xx-small;
+    }
+}
