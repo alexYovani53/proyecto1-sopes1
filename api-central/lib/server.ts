@@ -3,21 +3,48 @@ import { app } from './app';
 import { sequelize } from './sequelize';
 import { sequelizeGC } from './sequelize';
 import * as debug from 'debug';
-import * as PulbicacionesController from './controllers/Publicacion';
+import * as PublicacionesController from './controllers/Publicacion';
+import * as PubSubController from './controllers/PubSub';
+var cors = require('cors');
+app.use(cors());
+
+require('dotenv').config();
 
 var port = normalizePort(process.env.PORT || '4153');
 app.set('port', port);
 
 var server = createServer(app);
 
+export const io = require('socket.io')(server, {
+    cors: {
+        origin: '*',
+        methods: ['GET', 'POST']
+    }
+});
+
 sequelize.sync().then(function () {
     sequelizeGC.sync().then(function () {
+        // TODO: Enviar notificaciones al recibir con PubSub
+        io.on('connection', (socket) => { 
+            console.log('a user connected');
+            
+            io.emit('status-conexion', { mensaje: 'Usuario conectado con exito' });
+
+            socket.on('prueba',async ()=>{    
+                io.emit('prueba', { mensaje: 'Exito' });
+            });
+        });
+
         server.listen(port, function () {
             debug('Express server listening on port  ' + port);
         });
         server.on('error', onError);
         server.on('listening', onListening);
-        PulbicacionesController.scheduleVerPublicaciones();
+
+
+        // Pub Sub
+        PubSubController.quickstart();
+        // PublicacionesController.scheduleVerPublicaciones();
     });
 });
 
