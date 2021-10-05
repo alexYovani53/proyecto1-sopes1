@@ -58,7 +58,7 @@ type Salidas struct {
 }
 
 func indexRoute(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w, "API GO is ready")
+	fmt.Fprintln(w, "API GO is ready CENTOS")
 }
 
 func finalizarCarga(w http.ResponseWriter, r *http.Request) {
@@ -82,10 +82,13 @@ func finalizarCarga(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	publish(string(msg))
+	
+	var salida Salidas
+	salida.Mensaje = "Ok"
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusAccepted)
-	json.NewEncoder(w).Encode(newCarga)
+	json.NewEncoder(w).Encode(salida)
 }
 
 func publicacion(w http.ResponseWriter, r *http.Request) {

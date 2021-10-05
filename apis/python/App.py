@@ -43,7 +43,7 @@ CORS(app)
 
 @app.route('/')
 def index():
-    return jsonify({"mensaje": "API PYTHON READY"})
+    return jsonify({"mensaje": "API PYTHON READY VM debian"})
 
 @app.route('/iniciarCarga')
 def iniciarCarga():
@@ -252,3 +252,4 @@ print(f"Published messages with custom attributes to {topic_path}.")
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True, port=3001)
+
