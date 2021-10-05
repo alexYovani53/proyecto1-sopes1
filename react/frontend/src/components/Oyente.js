@@ -13,7 +13,6 @@ class Oyente extends Component {
     
     componentDidMount(){
 
-        console.log("hola")
         this.socket.emit('prueba');
         this.socket.on('prueba',respuesta=>{
             console.log("respuesta",respuesta)
