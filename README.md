@@ -61,3 +61,12 @@ INICIALMENTE creíamos que su implementación era muy complicada, sin embargo re
 
 **24 de septiembre**
 ![](Imagenes/201701089_1.png)
+
+
+##### ALEX JERONIMO 201602912
+
+**23 de septiembre**
+![](Imagenes/conferencia23-sept-1.png)
+
+**24 de septiembre**
+![](Imagenes/conferencia24-sep-2.jpg)

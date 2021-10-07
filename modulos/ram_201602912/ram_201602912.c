@@ -1,18 +1,18 @@
-#include <linux/fs.h>
-#include <linux/init.h>
-#include <linux/kernel.h>
-#include <linux/hugetlb.h>
 #include <linux/module.h>
+#include <linux/init.h>
 #include <linux/proc_fs.h>
+#include <linux/fs.h>
+#include <linux/sysinfo.h>
 #include <linux/seq_file.h>
-#include <linux/vmstat.h>
-
-
+#include <linux/swap.h>
 
 
     unsigned long memoriaLibre;
     unsigned long memoriaTotal;
     unsigned long disponible;
+    unsigned long resta;
+    unsigned long usage;
+    
 
 static int meminfo_proc_show( struct seq_file *flujo , void *v ){
 
@@ -25,9 +25,9 @@ static int meminfo_proc_show( struct seq_file *flujo , void *v ){
 
     memoriaTotal = (K(i.totalram) /1024);
     memoriaLibre = (K(i.freeram ) /1024);
-    disponible =(((K(i.totalram)-K(i.freeram))/1024)*100 )/ (K(i.totalram)/1024);
-
-
+    usage =(((K(i.totalram)-K(i.freeram))/1024)*100 )/ (K(i.totalram)/1024);
+    disponible = (K(si_mem_available())/1024);
+    resta = (K(i.totalswap)/1024);
 
     seq_printf(flujo,"{");
     seq_printf(flujo,"\t\"descripcion\":\"Seminario de sistemas 1 - 2s - 2021\",\n");
@@ -37,7 +37,7 @@ static int meminfo_proc_show( struct seq_file *flujo , void *v ){
     seq_printf(flujo,"\t\t\"Memo_libre\":%8lu,\n",memoriaLibre);
     seq_printf(flujo,"\t\t\"Memo_available\":%8lu,\n",disponible);
     seq_printf(flujo,"\t\t\"Memo_usada\":%8lu,\n",(memoriaTotal-memoriaLibre));
-    seq_printf(flujo,"\t\t\"Memo_usada_por\":%8lu\n",((memoriaTotal-memoriaLibre)*100)/memoriaTotal);
+    seq_printf(flujo,"\t\t\"Memo_usada_por\":%8lu\n",usage);
     seq_printf(flujo,"\t\t}\n");  
     seq_printf(flujo,"\t]\n");
     seq_printf(flujo,"}\n");
