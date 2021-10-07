@@ -48,3 +48,16 @@ Consideramos que es mejor docker, al final pues viene siendo similares y no vale
 6. **Considera de utilidad la utilización de Prometheus y Grafana para crear dashboards, ¿Por qué?**
 
 INICIALMENTE creíamos que su implementación era muy complicada, sin embargo resulto ser todo lo contrario, además los usos que se le puede dar son varios y los resultados que podemos ver en Grafana son  
+
+
+
+### Participacion
+
+
+##### Fernando Chajon 201701089
+
+**23 de septiembre**
+![](Imagenes/201701089_2.png)
+
+**24 de septiembre**
+![](Imagenes/201701089_1.png)
