@@ -1,5 +1,9 @@
 # proyecto1-sopes1
 
+# DIAGRAMA ENTIDAD RELACION
+
+![](Imagenes/ER.jpg)
+
 
 
 # Preguntas de reflexion
